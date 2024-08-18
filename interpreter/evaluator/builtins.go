@@ -1,6 +1,9 @@
 package evaluator
 
-import "eventloop/interpreter/interpreter/object"
+import (
+	"eventloop/interpreter/interpreter/object"
+	"fmt"
+)
 
 var builtins = map[string]*object.Builtin{
 	"len": {
@@ -120,6 +123,15 @@ var builtins = map[string]*object.Builtin{
 			newElements := make([]object.Object, length-1, length-1)
 			copy(newElements, arr.Elements[:length-1])
 			return &object.Array{Elements: newElements}
+		},
+	},
+	"print": {
+		Fn: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+
+			return NULL
 		},
 	},
 }
