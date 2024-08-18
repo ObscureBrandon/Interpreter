@@ -358,13 +358,13 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`first([])`, nil},
 		{`last([1, 2, 3])`, 3},
 		{`last([])`, nil},
-		{`rest([1, 2, 3])`, []int{2, 3}},
-		{`rest([1])`, []int{}},
+		{`rest([1, 2, 3])`, &object.Array{Elements: []object.Object{&object.Integer{Value: 2}, &object.Integer{Value: 3}}}},
+		{`rest([1])`, &object.Array{Elements: []object.Object{}}},
 		{`rest([])`, nil},
-		{`push([1], 2)`, []int{1, 2}},
-		{`push([], 1)`, []int{1}},
-		{`pop([1, 2, 3])`, []int{1, 2}},
-		{`pop([1])`, []int{}},
+		{`push([1], 2)`, &object.Array{Elements: []object.Object{&object.Integer{Value: 1}, &object.Integer{Value: 2}}}},
+		{`push([], 1)`, &object.Array{Elements: []object.Object{&object.Integer{Value: 1}}}},
+		{`pop([1, 2, 3])`, &object.Array{Elements: []object.Object{&object.Integer{Value: 1}, &object.Integer{Value: 2}}}},
+		{`pop([1])`, &object.Array{Elements: []object.Object{}}},
 		{`pop([])`, nil},
 		{`bool(true)`, true},
 		{`bool(false)`, false},
@@ -379,22 +379,25 @@ func TestBuiltinFunctions(t *testing.T) {
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
 
-		switch expected := tt.expected.(type) {
+		switch tt.expected.(type) {
 		case int:
-			testIntegerObject(t, evaluated, int64(expected))
+			testIntegerObject(t, evaluated, int64(tt.expected.(int)))
 		case string:
 			errObj, ok := evaluated.(*object.Error)
 			if !ok {
 				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
 				continue
 			}
-			if errObj.Message != expected {
-				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
 			}
 		case bool:
-			testBooleanObject(t, evaluated, expected)
+			testBooleanObject(t, evaluated, tt.expected.(bool))
 		case nil:
 			testNullObject(t, evaluated)
+		case *object.Array:
+			expected_arr, _ := tt.expected.(*object.Array)
+			testArrayObject(t, evaluated, *expected_arr)
 		}
 	}
 }
@@ -474,6 +477,35 @@ func TestArrayIndexExpressions(t *testing.T) {
 			testNullObject(t, evaluated)
 		}
 	}
+}
+
+func testArrayObject(t *testing.T, obj object.Object, expected object.Array) bool {
+	arr, ok := obj.(*object.Array)
+	if !ok {
+		t.Errorf("object is not ARRAY. got=%T (%+v)", obj, obj)
+	}
+
+	len_expected := len(expected.Elements)
+	len_arr := len(arr.Elements)
+	if len_expected != len_arr {
+		t.Errorf("expected array of size=%d got=%d", len_expected, len_arr)
+	}
+
+	for i, expected_elem := range expected.Elements {
+		curr_elem := arr.Elements[i]
+		switch expected_elem.(type) {
+		case *object.Integer:
+			expected_int, _ := expected_elem.(*object.Integer)
+			testIntegerObject(t, curr_elem, expected_int.Value)
+		case *object.Boolean:
+			expected_bool, _ := expected_elem.(*object.Boolean)
+			testBooleanObject(t, curr_elem, expected_bool.Value)
+		case *object.Null:
+			testNullObject(t, curr_elem)
+		}
+	}
+
+	return true
 }
 
 func testNullObject(t *testing.T, obj object.Object) bool {
