@@ -32,10 +32,12 @@ const (
 	SLASH    = "/"
 	ASTERISK = "*"
 
-	LT  = "<"
-	GT  = ">"
-	EQ  = "=="
-	NEQ = "!="
+	LT    = "<"
+	GT    = ">"
+	EQ    = "=="
+	NEQ   = "!="
+	LT_EQ = "<="
+	GT_EQ = ">="
 
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
