@@ -25,7 +25,7 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Integer{Value: node.Value}
 
 	case *ast.Boolean:
-		return nativeBoolToBooleanObject(node.Value)
+		return NativeBoolToBooleanObject(node.Value)
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
@@ -210,7 +210,7 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 		return condition
 	}
 
-	if isTruthy(condition) {
+	if IsTruthy(condition) {
 		return Eval(ie.Consequence, env)
 	} else if ie.Alternative != nil {
 		return Eval(ie.Alternative, env)
@@ -222,17 +222,17 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
 	case operator == "&&":
-		return nativeBoolToBooleanObject(isTruthy(left) && isTruthy(right))
+		return NativeBoolToBooleanObject(IsTruthy(left) && IsTruthy(right))
 	case operator == "||":
-		return nativeBoolToBooleanObject(isTruthy(left) || isTruthy(right))
+		return NativeBoolToBooleanObject(IsTruthy(left) || IsTruthy(right))
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
 		return evalStringInfixExpression(operator, left, right)
 	case operator == "==":
-		return nativeBoolToBooleanObject(left == right)
+		return NativeBoolToBooleanObject(left == right)
 	case operator == "!=":
-		return nativeBoolToBooleanObject(left != right)
+		return NativeBoolToBooleanObject(left != right)
 	case left.Type() != right.Type():
 		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
 	default:
@@ -264,17 +264,17 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	case "/":
 		return &object.Integer{Value: leftVal / rightVal}
 	case "<":
-		return nativeBoolToBooleanObject(leftVal < rightVal)
+		return NativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
-		return nativeBoolToBooleanObject(leftVal > rightVal)
+		return NativeBoolToBooleanObject(leftVal > rightVal)
 	case "<=":
-		return nativeBoolToBooleanObject(leftVal <= rightVal)
+		return NativeBoolToBooleanObject(leftVal <= rightVal)
 	case ">=":
-		return nativeBoolToBooleanObject(leftVal >= rightVal)
+		return NativeBoolToBooleanObject(leftVal >= rightVal)
 	case "==":
-		return nativeBoolToBooleanObject(leftVal == rightVal)
+		return NativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":
-		return nativeBoolToBooleanObject(leftVal != rightVal)
+		return NativeBoolToBooleanObject(leftVal != rightVal)
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
@@ -347,7 +347,7 @@ func evalProgram(program *ast.Program, env *object.Environment) object.Object {
 	return result
 }
 
-func nativeBoolToBooleanObject(input bool) *object.Boolean {
+func NativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
 		return TRUE
 	}
@@ -355,7 +355,7 @@ func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	return FALSE
 }
 
-func isTruthy(obj object.Object) bool {
+func IsTruthy(obj object.Object) bool {
 	switch {
 	case obj == NULL:
 		return false

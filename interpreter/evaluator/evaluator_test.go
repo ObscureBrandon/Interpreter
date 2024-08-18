@@ -354,6 +354,26 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len("hello world")`, 11},
 		{`len(1)`, "argument to `len` not supported, got INTEGER"},
 		{`len("one", "two")`, "wrong number of arguments. got=2, want=1"},
+		{`first([1, 2, 3])`, 1},
+		{`first([])`, nil},
+		{`last([1, 2, 3])`, 3},
+		{`last([])`, nil},
+		{`rest([1, 2, 3])`, []int{2, 3}},
+		{`rest([1])`, []int{}},
+		{`rest([])`, nil},
+		{`push([1], 2)`, []int{1, 2}},
+		{`push([], 1)`, []int{1}},
+		{`pop([1, 2, 3])`, []int{1, 2}},
+		{`pop([1])`, []int{}},
+		{`pop([])`, nil},
+		{`bool(true)`, true},
+		{`bool(false)`, false},
+		{`bool("")`, false},
+		{`bool([])`, false},
+		{`bool("false")`, true},
+		{`bool([false])`, true},
+		{`print("")`, nil},
+		{`print()`, nil},
 	}
 
 	for _, tt := range tests {
@@ -371,6 +391,10 @@ func TestBuiltinFunctions(t *testing.T) {
 			if errObj.Message != expected {
 				t.Errorf("wrong error message. expected=%q, got=%q", expected, errObj.Message)
 			}
+		case bool:
+			testBooleanObject(t, evaluated, expected)
+		case nil:
+			testNullObject(t, evaluated)
 		}
 	}
 }
