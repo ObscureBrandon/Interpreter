@@ -39,6 +39,9 @@ const (
 	LT_EQ = "<="
 	GT_EQ = ">="
 
+	AND = "&&"
+	OR  = "||"
+
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 	RETURN   = "RETURN"

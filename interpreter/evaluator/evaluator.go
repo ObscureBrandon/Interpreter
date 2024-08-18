@@ -221,6 +221,10 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
+	case operator == "&&":
+		return nativeBoolToBooleanObject(isTruthy(left) && isTruthy(right))
+	case operator == "||":
+		return nativeBoolToBooleanObject(isTruthy(left) || isTruthy(right))
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
 	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
@@ -352,13 +356,22 @@ func nativeBoolToBooleanObject(input bool) *object.Boolean {
 }
 
 func isTruthy(obj object.Object) bool {
-	switch obj {
-	case NULL:
+	switch {
+	case obj == NULL:
 		return false
-	case TRUE:
+	case obj == TRUE:
 		return true
-	case FALSE:
+	case obj == FALSE:
 		return false
+	case obj.Type() == object.INTEGER_OBJ:
+		num, _ := obj.(*object.Integer)
+		return num.Value != 0
+	case obj.Type() == object.STRING_OBJ:
+		str, _ := obj.(*object.String)
+		return len(str.Value) != 0
+	case obj.Type() == object.ARRAY_OBJ:
+		arr, _ := obj.(*object.Array)
+		return len(arr.Elements) != 0
 	default:
 		return true
 	}
