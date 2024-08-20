@@ -314,3 +314,23 @@ func (ie *IndexExpression) String() string {
 
 	return out.String()
 }
+
+type ReAssignmentStatement struct {
+	Token    token.Token
+	Left     *Identifier
+	Operator string
+	Right    Expression
+}
+
+func (ra *ReAssignmentStatement) TokenLiteral() string { return ra.Token.Literal }
+func (ra *ReAssignmentStatement) statementNode()       {}
+func (ra *ReAssignmentStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ra.Left.String())
+	out.WriteString(" " + ra.Operator + " ")
+	out.WriteString(ra.Right.String())
+
+	return out.String()
+}
+

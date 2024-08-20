@@ -118,6 +118,18 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		}
 		return evalIndexExpression(left, index)
 
+	case *ast.ReAssignmentStatement:
+		_, ok := env.Get(node.Left.Value)
+		if !ok {
+			return newError("identifier not found: " + node.Left.Value)
+		}
+
+		val := Eval(node.Right, env)
+		if isError(val) {
+			return val
+		}
+
+		env.Set(node.Left.Value, val)
 	}
 
 	return nil

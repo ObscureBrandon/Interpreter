@@ -209,6 +209,10 @@ func TestErrorHandling(t *testing.T) {
 			`"Hello" - "World"`,
 			"unknown operator: STRING - STRING",
 		},
+		{
+			"x = 31 + 38",
+			"identifier not found: x",
+		},
 	}
 
 	for _, tt := range tests {
@@ -241,6 +245,34 @@ func TestLetStatements(t *testing.T) {
 
 	for _, tt := range tests {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestReAssignmentStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"let a = 5; a = a + 1; a;", 6},
+		{`let a = "lol"; a = [1, 2, 3]; a[0];`, 1},
+		{`let s = "Hello "; s = s + "World!"; s;`, "Hello World!"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(tt.expected.(int)))
+		case string:
+			str, ok := evaluated.(*object.String)
+			if !ok {
+				t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+			}
+
+			if str.Value != tt.expected.(string) {
+				t.Errorf("String has wrong value. got=%q", str.Value)
+			}
+		}
 	}
 }
 

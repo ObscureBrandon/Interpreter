@@ -145,8 +145,31 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
+		if p.curToken.Type == token.IDENT && p.peekTokenIs(token.ASSIGN) {
+			return p.parseReAssignmentStatement()
+		}
+
 		return p.parseExpressionStatement()
 	}
+}
+
+func (p *Parser) parseReAssignmentStatement() *ast.ReAssignmentStatement {
+	stmt := &ast.ReAssignmentStatement{}
+	stmt.Left = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+
+	if !p.expectPeek(token.ASSIGN) {
+		return nil
+	}
+
+	stmt.Operator = p.curToken.Literal
+	p.nextToken()
+	stmt.Right = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {

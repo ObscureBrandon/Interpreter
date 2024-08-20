@@ -41,6 +41,42 @@ func TestLetStatements(t *testing.T) {
 	}
 }
 
+func TestReAssignmentStatements(t *testing.T) {
+	tests := []struct {
+		input              string
+		expectedIdentifier string
+		expectedValue      interface{}
+	}{
+		{"x = 10;", "x", 10},
+		{"y = true;", "y", true},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not contain 1 statements. got=%d", len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ReAssignmentStatement)
+		if !ok {
+			t.Errorf("s not *ast.ReAssignmentStatement. got=%T", stmt)
+		}
+
+		if stmt.Left.Value != tt.expectedIdentifier {
+			t.Errorf("ReAssignment.Left.Value not '%s'. got=%s", tt.expectedIdentifier, stmt.Left.Value)
+		}
+
+		val := stmt.Right
+		if !testLiteralExpression(t, val, tt.expectedValue) {
+			return
+		}
+	}
+}
+
 func TestReturnStatements(t *testing.T) {
 	tests := []struct {
 		input         string
