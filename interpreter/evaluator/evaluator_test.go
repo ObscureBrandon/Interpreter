@@ -276,6 +276,34 @@ func TestReAssignmentStatements(t *testing.T) {
 	}
 }
 
+func TestForLoopStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{"let i = 0; for (; i < 10; i = i + 1) { }; i;", 10},
+		{"let i = 0; for (let i = 0; i < 10; i = i + 1) {}; i;", 0},
+		{"for (let i = 0; i < 10; i = i + 1) { let i = 5; }", `"i" declared in for loop initilization`},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(tt.expected.(int)))
+		case string:
+			errObj, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error. got=%T (%+v)", evaluated, evaluated)
+				continue
+			}
+			if errObj.Message != tt.expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", tt.expected, errObj.Message)
+			}
+		}
+	}
+}
+
 func TestFunctionObject(t *testing.T) {
 	input := `fn(x) { x + 2; };`
 

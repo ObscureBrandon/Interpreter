@@ -1,5 +1,7 @@
 package object
 
+import "fmt"
+
 func NewEnclosedEnvironment(outer *Environment) *Environment {
 	env := NewEnvironment()
 	env.outer = outer
@@ -25,7 +27,30 @@ func (e *Environment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 
-func (e *Environment) Set(name string, val Object) Object {
-	e.store[name] = val
+func (e *Environment) Set(name string, val Object, is_declaration bool) Object {
+	_, ok := e.store[name]
+
+	if is_declaration && ok {
+		return &Error{Message: fmt.Sprintf("%q declared in for loop initilization", name)}
+	}
+
+	if is_declaration {
+		e.store[name] = val
+		return val
+	}
+
+	if !is_declaration {
+		_, ok = e.store[name]
+		if ok {
+			e.store[name] = val
+			return val
+		}
+
+		if e.outer != nil {
+			e.outer.store[name] = val
+			return val
+		}
+	}
+
 	return val
 }

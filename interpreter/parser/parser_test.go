@@ -540,11 +540,64 @@ func TestIfElseExpression(t *testing.T) {
 	alternative, ok := exp.Alternative.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
 		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
-			exp.Consequence.Statements[0])
+			exp.Alternative.Statements[0])
 
 	}
 
 	if !testIdentifier(t, alternative.Expression, "y") {
+		return
+	}
+}
+
+func TestForLoopParsing(t *testing.T) {
+	input := `for (let i = 0; i < 10; i = i + 1) { i; }`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d\n", 1, len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ForLoopStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ForLoopStatement. got=%T",
+			program.Statements[0])
+	}
+
+	if stmt.Identifier != nil && !testLetStatement(t, stmt.Identifier, "i") {
+		return
+	}
+
+	val := stmt.Identifier.Value
+	if stmt.Identifier != nil && !testLiteralExpression(t, val, 0) {
+		return
+	}
+
+	if !testInfixExpression(t, stmt.Condition, "i", "<", 10) {
+		return
+	}
+
+	if stmt.Update.Left.Value != "i" {
+		return
+	}
+
+	if stmt.Update.Operator != "=" {
+		return
+	}
+
+	if !testInfixExpression(t, stmt.Update.Right, "i", "+", 1) {
+		return
+	}
+
+	consequence, ok := stmt.Body.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("Statements[0] is not ast.ExpressionStatement. got=%T",
+			stmt.Body.Statements[0])
+	}
+	if !testIdentifier(t, consequence.Expression, "i") {
 		return
 	}
 }

@@ -334,3 +334,18 @@ func (ra *ReAssignmentStatement) String() string {
 	return out.String()
 }
 
+type ForLoopStatement struct {
+	Token      token.Token
+	Identifier *LetStatement
+	Condition  Expression
+	Update     *ReAssignmentStatement
+	Body       *BlockStatement
+}
+
+func (fl *ForLoopStatement) TokenLiteral() string { return fl.Token.Literal }
+func (fl *ForLoopStatement) statementNode()       {}
+func (fl *ForLoopStatement) String() string {
+	var out bytes.Buffer
+
+	return out.String()
+}

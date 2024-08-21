@@ -144,6 +144,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.FOR:
+		return p.parseForLoop()
 	default:
 		if p.curToken.Type == token.IDENT && p.peekTokenIs(token.ASSIGN) {
 			return p.parseReAssignmentStatement()
@@ -239,6 +241,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 		p.nextToken()
 		leftExp = infix(leftExp)
 	}
+
 	return leftExp
 }
 
@@ -365,6 +368,47 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 	array.Elements = p.parseExpressionList(token.RBRACKET)
 
 	return array
+}
+
+func (p *Parser) parseForLoop() ast.Statement {
+	loop := &ast.ForLoopStatement{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+	p.nextToken()
+
+	// definition is optional
+	if !p.curTokenIs(token.SEMICOLON) {
+		loop.Identifier = p.parseLetStatement()
+		if !p.curTokenIs(token.SEMICOLON) {
+			return nil
+		}
+	}
+
+	p.nextToken()
+	loop.Condition = p.parseExpression(LOWEST)
+	if !p.expectPeek(token.SEMICOLON) {
+		return nil
+	}
+	p.nextToken()
+
+	loop.Update = p.parseReAssignmentStatement()
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	loop.Body = p.parseBlockStatement()
+
+	return loop
 }
 
 func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {

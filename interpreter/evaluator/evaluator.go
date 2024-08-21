@@ -73,7 +73,10 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 
-		env.Set(node.Name.Value, val)
+		ret := env.Set(node.Name.Value, val, true)
+		if isError(ret) {
+			return ret
+		}
 
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
@@ -129,7 +132,34 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 
-		env.Set(node.Left.Value, val)
+		env.Set(node.Left.Value, val, false)
+
+	case *ast.ForLoopStatement:
+		extendedEnv := object.NewEnclosedEnvironment(env)
+		if node.Identifier != nil {
+			Eval(node.Identifier, extendedEnv)
+		}
+
+		for {
+			res, ok := Eval(node.Condition, extendedEnv).(*object.Boolean)
+			if !ok {
+				newError("condition must result in a boolean")
+			}
+
+			if !res.Value {
+				break
+			}
+
+			body_res := Eval(node.Body, extendedEnv)
+			if isError(body_res) {
+				return body_res
+			}
+
+			update_res := Eval(node.Update, extendedEnv)
+			if isError(update_res) {
+				return update_res
+			}
+		}
 	}
 
 	return nil
@@ -152,7 +182,7 @@ func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Enviro
 	env := object.NewEnclosedEnvironment(fn.Env)
 
 	for paramIdx, param := range fn.Parameters {
-		env.Set(param.Value, args[paramIdx])
+		env.Set(param.Value, args[paramIdx], true)
 	}
 
 	return env
