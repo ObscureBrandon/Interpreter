@@ -34,6 +34,7 @@ func TestNextToken(t *testing.T) {
 			[1, 2];
 			break;
 			continue;
+			{"foo": "bar"}
 	`
 
 	tests := []struct {
@@ -139,6 +140,11 @@ func TestNextToken(t *testing.T) {
 		{token.SEMICOLON, ";"},
 		{token.CONTINUE, "continue"},
 		{token.SEMICOLON, ";"},
+		{token.LBRACE, "{"},
+		{token.STRING, "foo"},
+		{token.COLON, ":"},
+		{token.STRING, "bar"},
+		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}
 
