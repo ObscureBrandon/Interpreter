@@ -20,6 +20,8 @@ const (
 	STRING_OBJ       = "STRING"
 	BUILTIN_OBJ      = "BUILTIN"
 	ARRAY_OBJ        = "ARRAY"
+	BREAK_OBJ        = "BREAK"
+	CONTINUE_OBJ     = "CONTINUE"
 )
 
 type Object interface {
@@ -120,3 +122,13 @@ func (ao *Array) Inspect() string {
 
 	return out.String()
 }
+
+type Break struct{}
+
+func (b *Break) Type() ObjectType { return BREAK_OBJ }
+func (b *Break) Inspect() string  { return "break" }
+
+type Continue struct{}
+
+func (c *Continue) Type() ObjectType { return CONTINUE_OBJ }
+func (c *Continue) Inspect() string  { return "continue" }

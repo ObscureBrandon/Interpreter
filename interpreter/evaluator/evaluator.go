@@ -66,6 +66,12 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 		return &object.ReturnValue{Value: val}
 
+	case *ast.ContinueStatement:
+		return &object.Continue{}
+
+	case *ast.BreakStatement:
+		return &object.Break{}
+
 	case *ast.LetStatement:
 		val := Eval(node.Value, env)
 
@@ -153,6 +159,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			body_res := Eval(node.Body, extendedEnv)
 			if isError(body_res) {
 				return body_res
+			}
+
+			if body_res != nil {
+				if body_res.Type() == object.BREAK_OBJ {
+					break
+				}
+
+				// No need to handle continue as it stops the Blockstatement's execution
 			}
 
 			update_res := Eval(node.Update, extendedEnv)
@@ -363,7 +377,7 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 
 		if result != nil {
 			rt := result.Type()
-			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ {
+			if rt == object.RETURN_VALUE_OBJ || rt == object.ERROR_OBJ || rt == object.CONTINUE_OBJ || rt == object.BREAK_OBJ {
 				return result
 			}
 		}

@@ -116,6 +116,50 @@ func TestReturnStatements(t *testing.T) {
 	}
 }
 
+func TestBreakStatement(t *testing.T) {
+	input := "break;"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain 1 statements. got=%d", len(program.Statements))
+	}
+
+	stmt := program.Statements[0]
+	breakStmt, ok := stmt.(*ast.BreakStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.BreakStatement. got=%T", stmt)
+	}
+
+	if breakStmt.TokenLiteral() != "break" {
+		t.Fatalf("breakStmt.TokenLiteral not 'break', got %q", breakStmt.TokenLiteral())
+	}
+}
+
+func TestContinueStatement(t *testing.T) {
+	input := "continue;"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Statements does not contain 1 statements. got=%d", len(program.Statements))
+	}
+
+	stmt := program.Statements[0]
+	continueStmt, ok := stmt.(*ast.ContinueStatement)
+	if !ok {
+		t.Fatalf("stmt not *ast.ContinueStatement. got=%T", stmt)
+	}
+
+	if continueStmt.TokenLiteral() != "continue" {
+		t.Fatalf("continueStmt.TokenLiteral not 'continue', got %q", continueStmt.TokenLiteral())
+	}
+}
+
 func TestIdentifierExpression(t *testing.T) {
 	input := "foobar;"
 

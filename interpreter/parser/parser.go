@@ -146,6 +146,10 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseReturnStatement()
 	case token.FOR:
 		return p.parseForLoop()
+	case token.BREAK:
+		return p.parseBreakStatement()
+	case token.CONTINUE:
+		return p.parseContinueStatement()
 	default:
 		if p.curToken.Type == token.IDENT && p.peekTokenIs(token.ASSIGN) {
 			return p.parseReAssignmentStatement()
@@ -409,6 +413,24 @@ func (p *Parser) parseForLoop() ast.Statement {
 	loop.Body = p.parseBlockStatement()
 
 	return loop
+}
+
+func (p *Parser) parseBreakStatement() ast.Statement {
+	stmt := &ast.BreakStatement{Token: p.curToken}
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseContinueStatement() ast.Statement {
+	stmt := &ast.ContinueStatement{Token: p.curToken}
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
 }
 
 func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {

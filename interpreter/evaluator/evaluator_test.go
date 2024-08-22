@@ -284,6 +284,8 @@ func TestForLoopStatements(t *testing.T) {
 		{"let i = 0; for (; i < 10; i = i + 1) { }; i;", 10},
 		{"let i = 0; for (let i = 0; i < 10; i = i + 1) {}; i;", 0},
 		{"for (let i = 0; i < 10; i = i + 1) { let i = 5; }", `"i" declared in for loop initilization`},
+		{"let i = 0; for (; i < 10; i = i + 1) { if (i == 5) { break; }} i;", 5},
+		{"let i = 0; for (let j = 0; j < 10; j = j + 1) { if (j == 5) { continue; } i = i + 1;} i;", 9},
 	}
 
 	for _, tt := range tests {

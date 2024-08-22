@@ -98,6 +98,22 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
+type BreakStatement struct {
+	Token token.Token
+}
+
+func (bs *BreakStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BreakStatement) statementNode()       {}
+func (bs *BreakStatement) String() string       { return bs.TokenLiteral() }
+
+type ContinueStatement struct {
+	Token token.Token
+}
+
+func (cs *ContinueStatement) TokenLiteral() string { return cs.Token.Literal }
+func (cs *ContinueStatement) statementNode()       {}
+func (cs *ContinueStatement) String() string       { return cs.TokenLiteral() }
+
 type ExpressionStatement struct {
 	Token      token.Token
 	Expression Expression
