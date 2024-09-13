@@ -178,6 +178,26 @@ func (vm *VM) executeMinusOperator() error {
 	return vm.push(&object.Integer{Value: -value})
 }
 
+func (vm *VM) buildHash(start, end int) (*object.Hash, error) {
+	hashedPairs := make(map[object.HashKey]object.HashPair)
+
+	for i := start; i < end; i += 2 {
+		key := vm.stack[i]
+		value := vm.stack[i+1]
+
+		pair := object.HashPair{Key: key, Value: value}
+
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return nil, fmt.Errorf("key is not hashable: %s", key.Type())
+		}
+
+		hashedPairs[hashKey.HashKey()] = pair
+	}
+
+	return &object.Hash{Pairs: hashedPairs}, nil
+}
+
 func (vm *VM) buildArray(start, end int) object.Object {
 	elements := make([]object.Object, end-start)
 
@@ -281,6 +301,22 @@ func (vm *VM) Run() error {
 			vm.sp -= numElements
 
 			err := vm.push(array)
+			if err != nil {
+				return err
+			}
+
+		case code.OpHash:
+			numElements := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+
+			hash, err := vm.buildHash(vm.sp-numElements, vm.sp)
+			if err != nil {
+				return err
+			}
+
+			vm.sp -= numElements
+
+			err = vm.push(hash)
 			if err != nil {
 				return err
 			}
